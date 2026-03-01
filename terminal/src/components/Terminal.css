@@ -1,0 +1,48 @@
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  color: #00ff00;
+  border: 1px solid #333;
+}
+
+.terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.terminal-input-area {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #333;
+}
+
+.terminal-input {
+  flex: 1;
+  background-color: #1e1e1e;
+  color: #00ff00;
+  border: none;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  outline: none;
+}
+
+.execute-btn {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.execute-btn:hover {
+  background-color: #218838;
+}
