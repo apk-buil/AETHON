@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>SUPER AI SYSTEM v1.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #030712;
+      --surface: rgba(255,255,255,0.03);
+      --surface2: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.07);
+      --cyan: #00f5ff;
+      --emerald: #00ff88;
+      --amber: #ffb800;
+      --rose: #ff4d6d;
+      --purple: #b44dff;
+      --blue: #4d9fff;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.025) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none; z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+      pointer-events: none; z-index: 0;
+    }
+
+    .glow { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; opacity: 0.07; z-index: 0; }
+    .g1 { width: 500px; height: 500px; background: var(--cyan); top: -150px; left: -150px; }
+    .g2 { width: 400px; height: 400px; background: var(--purple); bottom: -150px; right: -150px; }
+
+    #app { position: relative; z-index: 1; }
+
+    /* TICKER */
+    .ticker {
+      height: 28px; overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: center;
+    }
+    .ticker-track {
+      display: flex; gap: 48px; white-space: nowrap;
+      animation: tick 35s linear infinite;
+    }
+    @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .tick-item { font-size: 9px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .tick-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cyan); }
+
+    /* HEADER */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,7,18,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .h-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 32px; height: 32px; border-radius: 7px;
+      border: 1px solid var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+      animation: spin 8s linear infinite;
+      box-shadow: 0 0 16px rgba(0,245,255,0.25);
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .logo-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(11px, 3.5vw, 16px);
+      font-weight: 700; color: var(--cyan);
+      text-shadow: 0 0 16px rgba(0,245,255,0.4);
+      letter-spacing: 1px;
+    }
+    .logo-sub { font-size: 8px; color: var(--muted); letter-spacing: 2px; }
+    .h-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .status-pill { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--emerald); white-space: nowrap; }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 6px var(--emerald); animation: pp 2s ease-in-out infinite; }
+    @keyframes pp { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+    #liveTime { font-size: 10px; color: var(--muted); }
+
+    /* NAV TABS */
+    .nav-row {
+      display: flex; overflow-x: auto; gap: 4px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .nav-row::-webkit-scrollbar { display: none; }
+    .nav-tab {
+      flex-shrink: 0;
+      padding: 6px 14px; font-size: 10px; letter-spacing: 1px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      border-radius: 4px; cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-tab:hover, .nav-tab.active {
+      border-color: var(--cyan); color: var(--cyan);
+      background: rgba(0,245,255,0.06);
+    }
+
+    /* MAIN */
+    main { padding: 12px; max-width: 1800px; margin: 0 auto; }
+
+    /* METRICS BAR */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px; margin-bottom: 12px;
+    }
+    @media (min-width: 480px) { .metrics { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 900px) { .metrics { grid-template-columns: repeat(5, 1fr); } }
+    .metric-card { padding: 14px 10px; text-align: center; }
+    .metric-val {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(18px, 4vw, 26px); font-weight: 700;
+      text-shadow: 0 0 16px currentColor;
+    }
+    .metric-lbl { font-size: 8px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; }
+    .metric-delta { font-size: 9px; margin-top: 3px; }
+
+    /* DASHBOARD GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    .span2 { grid-column: 1; }
+    @media (min-width: 700px) { .span2 { grid-column: span 2; } }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      position: relative; overflow: hidden;
+      transition: border-color .3s;
+    }
+    .card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,245,255,0.02) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .card:hover { border-color: rgba(0,245,255,0.15); }
+    .card-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+      color: var(--cyan);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .badge {
+      font-size: 8px; letter-spacing: 1px;
+      padding: 2px 7px; border-radius: 20px; border: 1px solid;
+    }
+    .b-cyan { border-color: rgba(0,245,255,.3); color: var(--cyan); background: rgba(0,245,255,.07); }
+    .b-emerald { border-color: rgba(0,255,136,.3); color: var(--emerald); background: rgba(0,255,136,.07); }
+    .b-amber { border-color: rgba(255,184,0,.3); color: var(--amber); background: rgba(255,184,0,.07); }
+
+    /* SUB CARD */
+    .sc {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 10px;
+    }
+    .sc-hover { transition: background .2s, border-color .2s; cursor: pointer; }
+    .sc-hover:hover { background: rgba(0,245,255,.04); border-color: rgba(0,245,255,.12); }
+
+    /* PROGRESS */
+    .bar-wrap { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+    .bar { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+    /* BRAIN */
+    .brain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .model-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .model-name { font-size: 11px; display: flex; align-items: center; gap: 5px; }
+    .mdot { width: 7px; height: 7px; border-radius: 50%; }
+    .mdot.active { animation: pp 1.5s infinite; }
+    .load-row { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-bottom: 5px; }
+
+    /* AGENTS */
+    .agent-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 10px; margin-bottom: 5px;
+    }
+    .agent-left { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+    .aicon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .stat-btn {
+      font-size: 8px; padding: 3px 8px; border-radius: 20px; border: 1px solid;
+      cursor: pointer; background: transparent;
+      font-family: 'Share Tech Mono', monospace; transition: all .2s;
+    }
+    .s-active { border-color: rgba(0,245,255,.3); color: var(--cyan); background: rgba(0,245,255,.07); }
+    .s-monitoring { border-color: rgba(255,184,0,.3); color: var(--amber); background: rgba(255,184,0,.07); }
+    .s-idle { border-color: var(--border); color: var(--muted); }
+
+    /* MEMORY */
+    .mem-item { margin-bottom: 14px; }
+    .mem-row { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 5px; }
+    .mem-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .mem-stat { text-align: center; padding: 12px; }
+    .mem-val { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; }
+    .mem-lbl { font-size: 8px; color: var(--muted); margin-top: 3px; letter-spacing: 1px; }
+
+    /* TASKS */
+    .task-list { max-height: 260px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .task-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 9px 10px; margin-bottom: 4px; position: relative;
+    }
+    .task-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; cursor: pointer; }
+    .td-run { background: var(--cyan); box-shadow: 0 0 7px var(--cyan); animation: pp 1.5s infinite; }
+    .td-queue { background: var(--amber); }
+    .td-done { background: var(--emerald); }
+    .task-meta { font-size: 9px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 2px; flex-wrap: wrap; }
+    .task-name { font-size: 11px; flex: 1; }
+    .task-time { font-size: 8px; color: var(--muted); }
+    .task-del { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; font-size: 13px; transition: all .2s; padding: 0 0 0 4px; flex-shrink: 0; }
+    .task-row:hover .task-del { opacity: 1; }
+    .task-del:hover { color: var(--rose); }
+    .add-row { display: flex; gap: 6px; margin-bottom: 10px; }
+    .task-inp {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 10px; font-size: 11px; color: var(--text);
+      font-family: 'Share Tech Mono', monospace; outline: none; transition: border-color .2s;
+      min-width: 0;
+    }
+    .task-inp:focus { border-color: rgba(0,245,255,.4); }
+    .btn-sm {
+      padding: 7px 12px; font-size: 9px; border-radius: 6px; cursor: pointer;
+      background: rgba(0,245,255,.09); border: 1px solid rgba(0,245,255,.3);
+      color: var(--cyan); font-family: 'Share Tech Mono', monospace;
+      transition: all .2s; letter-spacing: 1px; white-space: nowrap;
+    }
+    .btn-sm:hover { background: rgba(0,245,255,.18); }
+
+    /* SECURITY */
+    .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .sec-item { padding: 12px; }
+    .sec-lbl { font-size: 10px; margin: 6px 0 3px; }
+    .sec-status { font-size: 8px; color: var(--muted); }
+    .approv-box {
+      border: 1px solid rgba(255,184,0,.25); background: rgba(255,184,0,.03);
+      border-radius: 7px; padding: 12px; margin-top: 10px;
+    }
+    .approv-title { font-size: 9px; color: var(--amber); margin-bottom: 6px; }
+    .approv-text { font-size: 9px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+    .approv-btns { display: flex; gap: 6px; }
+    .btn-ok { font-size: 8px; padding: 4px 10px; border-radius: 4px; cursor: pointer; background: rgba(0,255,136,.08); border: 1px solid rgba(0,255,136,.3); color: var(--emerald); font-family: 'Share Tech Mono', monospace; transition: all .2s; }
+    .btn-no { font-size: 8px; padding: 4px 10px; border-radius: 4px; cursor: pointer; background: rgba(255,77,109,.08); border: 1px solid rgba(255,77,109,.3); color: var(--rose); font-family: 'Share Tech Mono', monospace; transition: all .2s; }
+
+    /* AUTOMATION */
+    .flow {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px; margin-top: 12px; flex-wrap: wrap; gap: 4px;
+    }
+    .fn { font-size: 8px; padding: 4px 8px; border-radius: 4px; border: 1px solid; letter-spacing: 1px; }
+    .fa { color: var(--muted); font-size: 10px; }
+    .fn-t { border-color: rgba(255,184,0,.3); color: var(--amber); background: rgba(255,184,0,.07); }
+    .fn-a { border-color: rgba(0,245,255,.3); color: var(--cyan); background: rgba(0,245,255,.07); }
+    .fn-ac { border-color: rgba(0,255,136,.3); color: var(--emerald); background: rgba(0,255,136,.07); }
+    .fn-s { border-color: rgba(180,77,255,.3); color: var(--purple); background: rgba(180,77,255,.07); }
+
+    /* EXECUTION */
+    .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .exec-stat { text-align: center; padding: 14px 10px; }
+    .exec-val { font-family: 'Orbitron', monospace; font-size: clamp(18px,4vw,24px); font-weight: 700; color: var(--cyan); text-shadow: 0 0 16px rgba(0,245,255,.4); }
+    .exec-lbl { font-size: 8px; color: var(--muted); margin-top: 3px; letter-spacing: 1px; }
+    .arch-node { font-size: 9px; padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,.02); text-align: center; color: rgba(255,255,255,.5); margin-bottom: 2px; }
+    .arch-con { text-align: center; color: var(--muted); font-size: 10px; line-height: 1; margin: 1px 0; }
+
+    /* IMPROVEMENT */
+    .loop { display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 4px; }
+    .ln { font-size: 8px; padding: 4px 8px; border-radius: 4px; border: 1px solid; letter-spacing: 1px; }
+    .imp-item { display: flex; align-items: flex-start; gap: 8px; padding: 9px 10px; margin-bottom: 5px; }
+    .imp-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+    .imp-action { font-size: 11px; }
+    .imp-detail { font-size: 9px; color: var(--muted); margin-top: 2px; }
+    .imp-time { font-size: 8px; color: var(--muted); flex-shrink: 0; }
+
+    /* INTEGRATION */
+    .int-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; margin-bottom: 5px; }
+    .int-left { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+    .cdot { width: 7px; height: 7px; border-radius: 50%; }
+    .con { background: var(--emerald); box-shadow: 0 0 5px var(--emerald); }
+    .coff { background: rgba(255,255,255,.15); }
+
+    /* CHAT */
+    #chat-panel {
+      position: fixed; bottom: 86px; right: 14px; z-index: 200;
+      width: calc(100vw - 28px); max-width: 400px; max-height: 70vh;
+      background: rgba(3,7,18,.97);
+      border: 1px solid rgba(0,245,255,.2);
+      border-radius: 14px; overflow: hidden;
+      display: none; flex-direction: column;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,245,255,.1);
+    }
+    #chat-panel.open { display: flex; }
+    .chat-hdr {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,245,255,.03);
+    }
+    .chat-title { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--cyan); letter-spacing: 2px; }
+    .chat-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; }
+    .chat-msgs {
+      flex: 1; overflow-y: auto; padding: 12px;
+      display: flex; flex-direction: column; gap: 10px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+      min-height: 140px;
+    }
+    .msg { display: flex; gap: 8px; align-items: flex-start; }
+    .msg.usr { flex-direction: row-reverse; }
+    .mav {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700;
+    }
+    .mav.ai { background: linear-gradient(135deg, var(--cyan), var(--purple)); color: #000; }
+    .mav.usr { background: rgba(255,255,255,.1); color: var(--text); }
+    .mbub {
+      max-width: 82%; padding: 9px 12px; border-radius: 9px;
+      font-size: 11px; line-height: 1.6;
+    }
+    .msg.ai .mbub { background: var(--surface2); border: 1px solid var(--border); }
+    .msg.usr .mbub { background: rgba(0,245,255,.09); border: 1px solid rgba(0,245,255,.2); color: var(--cyan); }
+    .chat-in-area {
+      padding: 10px 12px; border-top: 1px solid var(--border);
+      display: flex; gap: 7px;
+    }
+    #chat-input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 12px; font-size: 11px; color: var(--text);
+      font-family: 'Share Tech Mono', monospace; outline: none; resize: none;
+      transition: border-color .2s; min-width: 0;
+    }
+    #chat-input:focus { border-color: rgba(0,245,255,.4); }
+    #send-btn {
+      width: 38px; height: 38px; border-radius: 7px; cursor: pointer;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    #send-btn svg { width: 15px; height: 15px; fill: #000; }
+    .typing { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+    .tdot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); animation: ty 1.2s infinite; }
+    .tdot:nth-child(2) { animation-delay: .2s; }
+    .tdot:nth-child(3) { animation-delay: .4s; }
+    @keyframes ty { 0%,80%,100% { opacity:.2; transform:scale(.8); } 40% { opacity:1; transform:scale(1); } }
+
+    /* FAB */
+    .fab {
+      position: fixed; bottom: 22px; right: 16px; z-index: 200;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 28px rgba(0,245,255,.35);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 0 48px rgba(0,245,255,.55); }
+    .fab svg { width: 22px; height: 22px; fill: #000; }
+
+    /* TERMINAL */
+    #term-panel {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 150;
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 80px 12px 20px;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+    }
+    #term-panel.open { display: flex; }
+    .term-box {
+      width: 100%; max-width: 820px;
+      background: rgba(0,0,0,.95); border: 1px solid rgba(0,255,136,.3);
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.9);
+    }
+    .term-hdr {
+      background: rgba(0,255,136,.04); border-bottom: 1px solid rgba(0,255,136,.12);
+      padding: 9px 14px; display: flex; align-items: center; gap: 7px;
+    }
+    .thdot { width: 9px; height: 9px; border-radius: 50%; }
+    .term-out {
+      padding: 14px; min-height: 180px; max-height: 50vh;
+      overflow-y: auto; font-size: 11px; color: var(--emerald);
+      line-height: 1.7; scrollbar-width: thin;
+    }
+    .tline { display: flex; gap: 7px; }
+    .tprompt { color: var(--emerald); flex-shrink: 0; font-size: 10px; }
+    .tcmd { color: var(--text); }
+    .tout { color: var(--muted); padding-left: 18px; font-size: 10px; }
+    .term-in {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 14px; border-top: 1px solid rgba(255,255,255,.05);
+    }
+    #term-input {
+      flex: 1; background: none; border: none; color: var(--emerald);
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; outline: none;
+    }
+
+    /* TABS */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ANIMATIONS */
+    .fade-in { animation: fi .35s ease forwards; }
+    @keyframes fi { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+
+<div id="app">
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<header>
+  <div class="h-top">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00f5ff" stroke-width="1.5" width="17" height="17"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="logo-title">SUPER AI SYSTEM</div>
+        <div class="logo-sub">AUTONOMOUS INTELLIGENCE PLATFORM v1.0</div>
+      </div>
+    </div>
+    <div class="h-right">
+      <div class="status-pill"><div class="pulse"></div><span>ONLINE</span></div>
+      <div id="liveTime"></div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="nav-tab active" onclick="switchTab('dashboard',this)">DASHBOARD</button>
+    <button class="nav-tab" onclick="switchTab('agents',this)">AGENTS</button>
+    <button class="nav-tab" onclick="switchTab('automation',this)">AUTOMATION</button>
+    <button class="nav-tab" onclick="openTerminal()">TERMINAL</button>
+  </div>
+</header>
+
+<div id="term-panel" onclick="closeTermBg(event)">
+  <div class="term-box" onclick="event.stopPropagation()">
+    <div class="term-hdr">
+      <div class="thdot" style="background:#ff5f57"></div>
+      <div class="thdot" style="background:#febc2e"></div>
+      <div class="thdot" style="background:#28c840"></div>
+      <span style="font-size:10px;color:rgba(255,255,255,.35);margin-left:8px;flex:1">super-ai — terminal</span>
+      <button onclick="closeTerminal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <div class="term-out" id="termOut">
+      <div class="tline"><span class="tprompt">root@super-ai:~$</span><span class="tcmd"> system --status</span></div>
+      <div class="tout">✓ AI Brain: ONLINE (4 models active)</div>
+      <div class="tout">✓ Agent Network: 6/6 running</div>
+      <div class="tout">✓ Memory: 226 GB provisioned</div>
+      <div class="tout">✓ Execution: 12 containers, 8 workers</div>
+      <div class="tout" style="color:var(--cyan)">Ready. Type 'help' for commands.</div>
+    </div>
+    <div class="term-in">
+      <span class="tprompt">root@super-ai:~$</span>
+      <input id="term-input" type="text" placeholder="Enter command..." autocomplete="off" onkeydown="handleTerm(event)"/>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<div class="metrics">
+  <div class="card metric-card fade-in"><div class="metric-val" style="color:var(--cyan)" id="mTasks">17</div><div class="metric-lbl">ACTIVE TASKS</div><div class="metric-delta" style="color:var(--emerald)">▲ +3 today</div></div>
+  <div class="card metric-card fade-in"><div class="metric-val" style="color:var(--emerald)">6</div><div class="metric-lbl">AGENTS ONLINE</div><div class="metric-delta" style="color:var(--emerald)">● all active</div></div>
+  <div class="card metric-card fade-in"><div class="metric-val" style="color:var(--amber)">4</div><div class="metric-lbl">WORKFLOWS</div><div class="metric-delta" style="color:var(--muted)">3 running</div></div>
+  <div class="card metric-card fade-in"><div class="metric-val" style="color:var(--purple)">1.2M</div><div class="metric-lbl">VECTORS</div><div class="metric-delta" style="color:var(--emerald)">▲ +12K</div></div>
+  <div class="card metric-card fade-in"><div class="metric-val" style="color:var(--rose)" id="mUptime">99.9%</div><div class="metric-lbl">UPTIME 30d</div><div class="metric-delta" style="color:var(--muted)">SLA met</div></div>
+</div>
+
+<div class="tab-content active" id="tab-dashboard">
+<div class="grid">
+
+  <div class="card span2 fade-in">
+    <div class="card-hdr"><div class="card-title">🧠 AI BRAIN</div><span class="badge b-cyan">ONLINE</span></div>
+    <div class="brain-grid" id="brainGrid"></div>
+    <div class="sc" style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:9px;color:var(--muted)">Model Router</span>
+      <span style="font-size:9px;color:var(--cyan)" id="routerTxt">Auto-selecting...</span>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">🤖 AGENTS</div><span style="font-size:9px;color:var(--muted)" id="agentCount">6/6 active</span></div>
+    <div id="agentList"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">💾 MEMORY</div></div>
+    <div id="memList"></div>
+    <div class="mem-stats">
+      <div class="sc mem-stat"><div class="mem-val" style="color:var(--cyan)">1.2M</div><div class="mem-lbl">VECTORS</div></div>
+      <div class="sc mem-stat"><div class="mem-val" style="color:var(--purple)">847K</div><div class="mem-lbl">GRAPH NODES</div></div>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr">
+      <div class="card-title">📋 TASKS</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:9px;color:var(--muted)" id="runCount">0 running</span>
+        <button class="btn-sm" onclick="toggleAdd()" style="padding:4px 9px">+ ADD</button>
+      </div>
+    </div>
+    <div id="addRow" style="display:none;margin-bottom:8px">
+      <div class="add-row">
+        <input class="task-inp" id="taskInp" placeholder="Task name..." onkeydown="if(event.key==='Enter')addTask()"/>
+        <button class="btn-sm" onclick="addTask()">ADD</button>
+      </div>
+    </div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">🛡 SECURITY</div><span class="badge b-emerald">SECURE</span></div>
+    <div class="sec-grid">
+      <div class="sc sec-item"><div>🔒</div><div class="sec-lbl">Permissions</div><div class="sec-status" style="color:var(--emerald)">enforced</div></div>
+      <div class="sc sec-item"><div>👁</div><div class="sec-lbl">Human Approval</div><div class="sec-status" style="color:var(--amber)">2 pending</div></div>
+      <div class="sc sec-item"><div>🛡</div><div class="sec-lbl">Sandbox</div><div class="sec-status" style="color:var(--cyan)">active</div></div>
+      <div class="sc sec-item"><div>📄</div><div class="sec-lbl">Audit Logs</div><div class="sec-status" style="color:var(--blue)">recording</div></div>
+    </div>
+    <div class="approv-box">
+      <div class="approv-title">⚠ Pending Approval</div>
+      <div class="approv-text" id="approvTxt">Developer Agent → request: access production server</div>
+      <div class="approv-btns">
+        <button class="btn-ok" onclick="doApprove(true)">Approve</button>
+        <button class="btn-no" onclick="doApprove(false)">Deny</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">⚙ AUTOMATION</div></div>
+    <div id="autoList"></div>
+    <div class="sc flow">
+      <span class="fn fn-t">Trigger</span><span class="fa">→</span>
+      <span class="fn fn-a">AI</span><span class="fa">→</span>
+      <span class="fn fn-ac">Actions</span><span class="fa">→</span>
+      <span class="fn fn-s">Store</span>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">🖥 EXECUTION</div></div>
+    <div class="exec-grid" id="execGrid"></div>
+    <div class="sc" style="margin-top:10px" id="archDiagram"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">🔄 SELF-IMPROVEMENT</div></div>
+    <div class="sc loop">
+      <span class="ln" style="border-color:rgba(0,245,255,.3);color:var(--cyan);background:rgba(0,245,255,.07)">Plan</span>
+      <span class="fa">→</span>
+      <span class="ln" style="border-color:rgba(0,255,136,.3);color:var(--emerald);background:rgba(0,255,136,.07)">Execute</span>
+      <span class="fa">→</span>
+      <span class="ln" style="border-color:rgba(255,184,0,.3);color:var(--amber);background:rgba(255,184,0,.07)">Evaluate</span>
+      <span class="fa">→</span>
+      <span class="ln" style="border-color:rgba(180,77,255,.3);color:var(--purple);background:rgba(180,77,255,.07)">Improve</span>
+    </div>
+    <div id="impList"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">🌐 INTEGRATIONS</div></div>
+    <div id="intList"></div>
+  </div>
+
+</div>
+</div>
+
+<div class="tab-content" id="tab-agents">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">
+    <div class="card fade-in" style="grid-column:1/-1">
+      <div class="card-hdr"><div class="card-title">AGENT CONTROL CENTER</div><button class="btn-sm" onclick="spawnAgent()">+ SPAWN</button></div>
+    </div>
+    <div id="agentCards" style="display:contents"></div>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-automation">
+  <div class="card fade-in">
+    <div class="card-hdr"><div class="card-title">AUTOMATION WORKFLOWS</div><button class="btn-sm" onclick="addWorkflow()">+ NEW</button></div>
+    <div id="wfTable"></div>
+  </div>
+</div>
+
+</main>
+
+<div id="chat-panel">
+  <div class="chat-hdr">
+    <div class="chat-title">⬡ AI COMMANDER</div>
+    <button class="chat-x" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="msg ai">
+      <div class="mav ai">AI</div>
+      <div class="mbub">Xin chào! Tôi là AI Commander. Bạn cần điều khiển agents, tạo tasks, hay hỏi về hệ thống không?</div>
+    </div>
+  </div>
+  <div class="chat-in-area">
+    <textarea id="chat-input" rows="1" placeholder="Nhập lệnh..." onkeydown="handleChatKey(event)"></textarea>
+    <button id="send-btn" onclick="sendChat()">
+      <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<button class="fab" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2"/></svg>
+</button>
+
+</div>
+
+<script>
+const S={
+  tasks:[
+    {id:1,name:'Deploy API server',agent:'Developer',status:'running',progress:72,time:'5m ago'},
+    {id:2,name:'Analyze dataset v3',agent:'Data',status:'running',progress:45,time:'8m ago'},
+    {id:3,name:'Security audit scan',agent:'Security',status:'queued',progress:0,time:'12m ago'},
+    {id:4,name:'Build React dashboard',agent:'Developer',status:'completed',progress:100,time:'20m ago'},
+    {id:5,name:'Optimize DB queries',agent:'Data',status:'running',progress:88,time:'2m ago'},
+  ],
+  agents:[
+    {id:'c',name:'Commander',status:'active',tasks:4,color:'var(--amber)',icon:'👑'},
+    {id:'d',name:'Developer',status:'active',tasks:7,color:'var(--emerald)',icon:'💻'},
+    {id:'r',name:'Research',status:'monitoring',tasks:2,color:'var(--blue)',icon:'🔍'},
+    {id:'s',name:'Security',status:'active',tasks:3,color:'var(--rose)',icon:'🛡'},
+    {id:'dt',name:'Data',status:'active',tasks:5,color:'var(--purple)',icon:'📊'},
+    {id:'sy',name:'System',status:'idle',tasks:1,color:'var(--cyan)',icon:'⚙'},
+  ],
+  memory:[
+    {name:'Short-term',size:'2.4 GB',usage:67,grad:'linear-gradient(90deg,var(--cyan),var(--emerald))'},
+    {name:'Long-term',size:'128 GB',usage:43,grad:'linear-gradient(90deg,var(--purple),var(--blue))'},
+    {name:'Vector DB',size:'64 GB',usage:81,grad:'linear-gradient(90deg,var(--amber),var(--rose))'},
+    {name:'Knowledge Graph',size:'32 GB',usage:29,grad:'linear-gradient(90deg,var(--emerald),var(--cyan))'},
+  ],
+  brain:[
+    {name:'Reasoning',load:78,status:'active',color:'var(--cyan)',icon:'🧠'},
+    {name:'Coding',load:92,status:'active',color:'var(--emerald)',icon:'💻'},
+    {name:'Planning',load:12,status:'idle',color:'var(--purple)',icon:'📋'},
+    {name:'Vision',load:45,status:'active',color:'var(--amber)',icon:'👁'},
+  ],
+  automation:[
+    {name:'Auto Deploy Pipeline',trigger:'webhook',status:'active',runs:142},
+    {name:'Data Sync Cron',trigger:'schedule',status:'active',runs:2840},
+    {name:'Bug Auto-Fix',trigger:'event',status:'active',runs:67},
+    {name:'Report Generator',trigger:'schedule',status:'paused',runs:891},
+  ],
+  integrations:[
+    {name:'GitHub',status:'connected',color:'var(--text)',icon:'⚡'},
+    {name:'Slack',status:'connected',color:'var(--blue)',icon:'💬'},
+    {name:'Cloud APIs',status:'connected',color:'var(--cyan)',icon:'☁'},
+    {name:'Discord',status:'disconnected',color:'var(--purple)',icon:'🎮'},
+    {name:'External AI',status:'connected',color:'var(--amber)',icon:'🤖'},
+  ],
+  improvements:[
+    {action:'Auto-debugged',detail:'3 runtime errors in API handler',time:'1m ago',color:'var(--rose)'},
+    {action:'Optimized',detail:'DB queries reduced 40%',time:'5m ago',color:'var(--emerald)'},
+    {action:'Self-improved',detail:'Workflow efficiency +12%',time:'18m ago',color:'var(--purple)'},
+  ],
+  execStats:[
+    {label:'Containers',value:12,sub:'running'},
+    {label:'Workers',value:8,sub:'active'},
+    {label:'Jobs Queue',value:23,sub:'pending'},
+    {label:'Uptime',value:'99.9%',sub:'30d avg'},
+  ],
+};
+
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const g=id=>document.getElementById(id);
+
+function rBrain(){
+  const el=g('brainGrid');if(!el)return;
+  el.innerHTML=S.brain.map(m=>`<div class="sc sc-hover" style="padding:12px"><div class="model-hdr"><div class="model-name" style="color:${m.color}">${m.icon} ${m.name}</div><div class="mdot ${m.status}" style="background:${m.status==='active'?m.color:'var(--muted)'}"></div></div><div class="load-row"><span>Load</span><span>${m.load}%</span></div><div class="bar-wrap"><div class="bar" style="width:${m.load}%;background:${m.color}"></div></div><div style="font-size:8px;color:var(--muted);margin-top:6px">${m.status.toUpperCase()}</div></div>`).join('');
+}
+
+function rAgents(){
+  const el=g('agentList');if(!el)return;
+  el.innerHTML=S.agents.map(a=>`<div class="sc sc-hover agent-row"><div class="agent-left"><div class="aicon" style="background:${a.color}18">${a.icon}</div><div><div style="font-size:11px">${a.name}</div>${a.tasks>0?`<div style="font-size:8px;color:var(--muted)">${a.tasks} tasks</div>`:''}</div></div><button class="stat-btn s-${a.status}" onclick="cycleAgent('${a.id}')">${a.status}</button></div>`).join('');
+  const ac=g('agentCount');if(ac)ac.textContent=`${S.agents.filter(a=>a.status==='active').length}/${S.agents.length} active`;
+}
+
+function rAgentCards(){
+  const el=g('agentCards');if(!el)return;
+  el.innerHTML=S.agents.map(a=>`<div class="card fade-in" style="border-color:${a.color}20"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:44px;height:44px;border-radius:10px;background:${a.color}12;border:1px solid ${a.color}25;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${a.icon}</div><div><div style="font-family:'Orbitron',monospace;font-size:11px;color:${a.color}">${a.name} Agent</div><button class="stat-btn s-${a.status}" style="margin-top:4px" onclick="cycleAgent('${a.id}')">${a.status}</button></div></div><div style="font-size:9px;color:var(--muted);margin-bottom:6px">Tasks: <span style="color:${a.color}">${a.tasks}</span></div><div class="bar-wrap"><div class="bar" style="width:${Math.min(100,a.tasks*13)}%;background:${a.color}"></div></div></div>`).join('');
+}
+
+function rMemory(){
+  const el=g('memList');if(!el)return;
+  el.innerHTML=S.memory.map(m=>`<div class="mem-item"><div class="mem-row"><span>${m.name}</span><span style="color:var(--muted)">${m.size} · ${m.usage}%</span></div><div class="bar-wrap"><div class="bar" style="width:${m.usage}%;background:${m.grad}"></div></div></div>`).join('');
+}
+
+function rTasks(){
+  const el=g('taskList');if(!el)return;
+  const run=S.tasks.filter(t=>t.status==='running').length;
+  const rc=g('runCount');if(rc)rc.textContent=`${run} running`;
+  el.innerHTML=S.tasks.map(t=>`<div class="sc sc-hover task-row"><div class="task-dot td-${t.status==='running'?'run':t.status==='completed'?'done':'queue'}" onclick="cycleTask(${t.id})"></div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px"><span class="task-name">${t.name}</span><span class="task-time">${t.time}</span></div><div class="task-meta"><span>${t.agent}</span><span>→</span><span style="color:${t.status==='running'?'var(--cyan)':t.status==='completed'?'var(--emerald)':'var(--amber)'}">${t.status}</span>${t.status==='running'?`<span style="color:var(--cyan)">${t.progress}%</span>`:''}</div>${t.status==='running'?`<div class="bar-wrap" style="margin-top:6px"><div class="bar" style="width:${t.progress}%;background:linear-gradient(90deg,var(--cyan),var(--purple))"></div></div>`:''}</div><button class="task-del" onclick="delTask(${t.id})">✕</button></div>`).join('');
+}
+
+function rAuto(){
+  const el=g('autoList');if(!el)return;
+  el.innerHTML=S.automation.map(f=>`<div class="sc sc-hover" style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;margin-bottom:5px"><div><div style="font-size:11px">${f.name}</div><div style="font-size:8px;color:var(--muted);margin-top:2px">${f.trigger}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;color:var(--muted)">${f.runs.toLocaleString()} runs</span><div style="width:7px;height:7px;border-radius:50%;background:${f.status==='active'?'var(--emerald)':'rgba(255,255,255,.15)'}"></div></div></div>`).join('');
+  const wf=g('wfTable');if(!wf)return;
+  wf.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:9px 8px;font-size:8px;color:var(--muted)">NAME</th><th style="text-align:left;padding:9px 8px;font-size:8px;color:var(--muted)">TRIGGER</th><th style="text-align:left;padding:9px 8px;font-size:8px;color:var(--muted)">STATUS</th><th style="text-align:right;padding:9px 8px;font-size:8px;color:var(--muted)">RUNS</th></tr></thead><tbody>${S.automation.map(f=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">${f.name}</td><td style="padding:10px 8px;color:var(--muted)">${f.trigger}</td><td style="padding:10px 8px"><span class="badge ${f.status==='active'?'b-emerald':'b-amber'}">${f.status}</span></td><td style="padding:10px 8px;text-align:right;color:var(--muted)">${f.runs.toLocaleString()}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function rInt(){
+  const el=g('intList');if(!el)return;
+  el.innerHTML=S.integrations.map(c=>`<div class="sc sc-hover int-row"><div class="int-left"><span>${c.icon}</span><span style="color:${c.color}">${c.name}</span></div><div class="cdot ${c.status==='connected'?'con':'coff'}"></div></div>`).join('');
+}
+
+function rExec(){
+  const el=g('execGrid');if(!el)return;
+  el.innerHTML=S.execStats.map(s=>`<div class="sc exec-stat"><div class="exec-val">${s.value}</div><div class="exec-lbl">${s.label}</div><div style="font-size:8px;color:rgba(255,255,255,.25)">${s.sub}</div></div>`).join('');
+  const ad=g('archDiagram');if(!ad)return;
+  const nodes=['Internet','AI Gateway','AI Core','Agent System','Tool System','Execution','Memory'];
+  ad.innerHTML=`<div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:7px;letter-spacing:1px">SYSTEM ARCHITECTURE</div>`+nodes.map((n,i)=>`<div class="arch-node">${n}</div>${i<nodes.length-1?'<div class="arch-con">│</div>':''}`).join('');
+}
+
+function rImp(){
+  const el=g('impList');if(!el)return;
+  el.innerHTML=S.improvements.map(im=>`<div class="sc sc-hover imp-item"><div class="imp-icon" style="background:${im.color}12">${im.action==='Auto-debugged'?'🐛':im.action==='Optimized'?'📈':'✨'}</div><div style="flex:1;min-width:0"><div class="imp-action" style="color:${im.color}">${im.action}</div><div class="imp-detail">${im.detail}</div></div><span class="imp-time">${im.time}</span></div>`).join('');
+}
+
+function rTicker(){
+  const el=g('ticker');if(!el)return;
+  const items=['● Developer: Build React — 72%','● Data: Analyzing dataset v3','● Security: Audit scan queued','● System self-optimized +12%','● 1.2M vectors indexed','● 12 containers active','● Auto Deploy triggered #143','● Knowledge Graph: 847K nodes'];
+  el.innerHTML=[...items,...items].map(t=>`<div class="tick-item"><div class="tick-dot"></div>${t}</div>`).join('');
+}
+
+function renderAll(){rBrain();rAgents();rMemory();rTasks();rAuto();rInt();rExec();rImp();rTicker();}
+
+function live(){
+  S.brain=S.brain.map(m=>{const l=Math.max(0,Math.min(100,m.load+r(-8,10)));return{...m,load:l,status:l>15?'active':'idle'};});
+  S.memory=S.memory.map(m=>({...m,usage:Math.max(5,Math.min(98,m.usage+r(-3,4)))}));
+  S.execStats=S.execStats.map(s=>typeof s.value==='string'&&s.value.includes('%')?{...s,value:`${(99.7+Math.random()*.29).toFixed(1)}%`}:{...s,value:Math.max(1,(parseInt(s.value)||0)+r(-2,3))});
+  S.tasks=S.tasks.map(t=>t.status==='running'?{...t,progress:Math.min(100,t.progress+r(1,5)),status:t.progress>=99?'completed':t.status}:t);
+  S.agents=S.agents.map(a=>({...a,tasks:Math.max(0,a.tasks+r(-1,2))}));
+  const mu=g('mUptime');if(mu)mu.textContent=`${(99.7+Math.random()*.29).toFixed(1)}%`;
+  const mt=g('mTasks');if(mt)mt.textContent=r(14,24);
+  const routes=['Auto-selecting...','Routing → Reasoning','Routing → Coding','Model: Reasoning','Model: Coding'];
+  const rt=g('routerTxt');if(rt)rt.textContent=routes[Math.floor(Math.random()*routes.length)];
+  rBrain();rMemory();rTasks();rExec();rAgents();
+  if(g('tab-agents').classList.contains('active'))rAgentCards();
+}
+setInterval(live,2500);
+
+function cycleAgent(id){const a=S.agents.find(x=>x.id===id);if(!a)return;const cy={active:'monitoring',monitoring:'idle',idle:'active'};a.status=cy[a.status]||'active';rAgents();rAgentCards();}
+function toggleAdd(){const row=g('addRow');if(!row)return;row.style.display=row.style.display==='none'?'block':'none';if(row.style.display==='block')g('taskInp').focus();}
+function addTask(){const inp=g('taskInp');if(!inp||!inp.value.trim())return;const agents=['Developer','Data','Security','System','Research','Commander'];S.tasks.unshift({id:Date.now(),name:inp.value.trim(),agent:agents[r(0,5)],status:'queued',progress:0,time:'just now'});inp.value='';toggleAdd();rTasks();}
+function delTask(id){S.tasks=S.tasks.filter(t=>t.id!==id);rTasks();}
+function cycleTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;const cy={queued:'running',running:'completed',completed:'queued'};t.status=cy[t.status];t.progress=t.status==='completed'?100:t.status==='queued'?0:50;rTasks();}
+
+const approvals=['Developer Agent → request: access production server','System Agent → request: restart DB cluster','Research Agent → request: crawl external sites'];
+let apIdx=0;
+function doApprove(ok){const txt=g('approvTxt');const box=txt.parentElement;if(!txt)return;txt.textContent=ok?'✓ Granted — executing in sandbox...':'✕ Denied — logged to audit trail';setTimeout(()=>{apIdx=(apIdx+1)%approvals.length;txt.textContent=approvals[apIdx];},2200);}
+
+function spawnAgent(){const ns=['Analytics','Deploy','Monitor','Crawler','Optimizer'];const cs=['var(--cyan)','var(--emerald)','var(--amber)','var(--rose)','var(--purple)'];const is=['📊','🚀','📡','🕷','⚡'];const i=r(0,4);S.agents.push({id:'n'+Date.now(),name:ns[i],status:'active',tasks:0,color:cs[i],icon:is[i]});rAgents();rAgentCards();}
+function addWorkflow(){const ns=['CI/CD Pipeline','Data Backup','Alert Monitor','Auto-Scale'];const ts=['webhook','schedule','event','api'];S.automation.push({name:ns[r(0,3)]+' '+Date.now().toString().slice(-3),trigger:ts[r(0,3)],status:'active',runs:0});rAuto();}
+
+function switchTab(name,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));const t=g('tab-'+name);if(t)t.classList.add('active');if(btn)btn.classList.add('active');if(name==='agents')rAgentCards();if(name==='automation')rAuto();}
+
+function openTerminal(){const p=g('term-panel');if(p){p.classList.toggle('open');if(p.classList.contains('open'))g('term-input').focus();}}
+function closeTerminal(){const p=g('term-panel');if(p)p.classList.remove('open');}
+function closeTermBg(e){if(e.target===g('term-panel'))closeTerminal();}
+
+const termCmds={help:['Commands:','  status  — system status','  agents  — list agents','  tasks   — list tasks','  clear   — clear output','  deploy [n] — deploy','  run [s] — run script','  logs    — recent logs','  memory  — memory stats'],status:['✓ AI Brain: ONLINE','✓ Agents: 6/6 running','✓ Memory: 226 GB','✓ Execution: 12 containers','✓ Security: enforced'],agents:S.agents.map(a=>`[${a.status}] ${a.name} — ${a.tasks} tasks`),tasks:S.tasks.map(t=>`[${t.status}] ${t.name} ${t.progress}%`),logs:['[02:14:33] Developer: Build complete','[02:15:01] Data: Vectorizing','[02:16:00] System: Memory optimized'],memory:['Short-term: 2.4 GB / 67%','Long-term: 128 GB / 43%','Vector DB: 64 GB / 81%','Knowledge: 32 GB / 29%'],};
+
+function handleTerm(e){if(e.key!=='Enter')return;const inp=g('term-input'),out=g('termOut');const cmd=inp.value.trim().toLowerCase();inp.value='';if(!cmd)return;out.innerHTML+=`<div class="tline"><span class="tprompt">root@super-ai:~$</span><span class="tcmd"> ${cmd}</span></div>`;if(cmd==='clear'){out.innerHTML='';return;}const base=cmd.split(' ')[0];let res;if(cmd.startsWith('deploy '))res=[`Deploying ${cmd.slice(7)}...`,'✓ Container created','✓ Health check OK','✓ Live → https://app.super-ai.dev'];else if(cmd.startsWith('run '))res=[`Running ${cmd.slice(4)}...`,'✓ Executed in 0.42s'];else if(termCmds[base])res=termCmds[base];else res=[`bash: ${cmd}: not found. Type 'help'`];out.innerHTML+=(res||[]).map(r=>`<div class="tout">${r}</div>`).join('');out.scrollTop=out.scrollHeight;}
+
+let chatOpen=false;
+function toggleChat(){chatOpen=!chatOpen;const p=g('chat-panel');if(p){chatOpen?p.classList.add('open'):p.classList.remove('open');}}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+
+async function sendChat(){
+  const inp=g('chat-input');const msg=inp.value.trim();if(!msg)return;inp.value='';
+  appendMsg('usr',msg);showTyping();
+  try{
+    const ctx=`You are the AI Commander of SUPER AI SYSTEM. ${S.agents.filter(a=>a.status==='active').length} agents active, ${S.tasks.filter(t=>t.status==='running').length} tasks running. Be concise. Respond in Vietnamese if user writes in Vietnamese.`;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:ctx,messages:[{role:'user',content:msg}]})});
+    removeTyping();
+    if(res.ok){const d=await res.json();appendMsg('ai',d.content?.[0]?.text||'...');}
+    else appendMsg('ai',`API error ${res.status}. Thử lại sau.`);
+  }catch{
+    removeTyping();
+    const fb=['Đang phân tích... '+S.agents.filter(a=>a.status==='active').length+' agents sẵn sàng.','✓ Commander đang điều phối '+S.tasks.filter(t=>t.status==='running').length+' tasks.','Memory Vector DB hiện tại: '+S.memory[2].usage+'%.','Developer Agent sẵn sàng — mô tả task nhé.'];
+    appendMsg('ai',fb[Math.floor(Math.random()*fb.length)]);
+  }
+}
+
+function appendMsg(role,txt){const el=g('chatMsgs');const d=document.createElement('div');d.className=`msg ${role} fade-in`;d.innerHTML=`<div class="mav ${role}">${role==='ai'?'AI':'U'}</div><div class="mbub">${txt.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function showTyping(){const el=g('chatMsgs');const d=document.createElement('div');d.className='msg ai';d.id='typing';d.innerHTML=`<div class="mav ai">AI</div><div class="mbub"><div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function removeTyping(){const t=g('typing');if(t)t.remove();}
+
+function tick(){const el=g('liveTime');if(el)el.textContent=new Date().toLocaleTimeString('en-US',{hour12:false});}
+setInterval(tick,1000);tick();
+
+renderAll();
+</script>
+</body>
+</html>
